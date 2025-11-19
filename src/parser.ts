@@ -65,10 +65,10 @@ function extractQuestions(tokens: marked.Token[], config: Config) {
 }
 
 function parseQuestion(tokens: marked.Token[], config: Config): BaseQuestion {
-    let explanation = parseExplanation(tokens);
-    let hint = parseHint(tokens);
-    let heading = parseHeading(tokens);
-    let answers = parseAnswers(tokens);
+    let explanation = parseExplanation(tokens, config);
+    let hint = parseHint(tokens, config);
+    let heading = parseHeading(tokens, config);
+    let answers = parseAnswers(tokens, config);
     let questionType = determineQuestionType(tokens);
     let questionConfig = new Config(config);
     const args = [heading, explanation, hint, answers, questionConfig] as const;
@@ -86,30 +86,30 @@ function findFirstHeadingIdx(tokens: marked.Token[]): number {
     return tokens.findIndex((token) => token['type'] == 'heading');
 }
 
-function parseHint(tokens: marked.Token[]): string {
+function parseHint(tokens: marked.Token[], config: Config): string {
     let blockquotes = tokens.filter((token) => token['type'] == 'blockquote');
-    return parseTokens(blockquotes);
+    return parseTokens(blockquotes, config);
 }
 
-function parseExplanation(tokens: marked.Token[]): string {
+function parseExplanation(tokens: marked.Token[], config: Config): string {
     let explanations = tokens.filter(
         (token) => token['type'] == 'paragraph' || token['type'] == 'code'
     );
-    return parseTokens(explanations);
+    return parseTokens(explanations, config);
 }
 
-function parseHeading(tokens: marked.Token[]): string {
+function parseHeading(tokens: marked.Token[], config: Config): string {
     let headings = tokens.filter((token) => token['type'] == 'heading');
-    return parseTokens(headings);
+    return parseTokens(headings, config);
 }
 
-function parseAnswers(tokens: marked.Token[]): Array<Answer> {
+function parseAnswers(tokens: marked.Token[], config: Config): Array<Answer> {
     let list = tokens.find(
         (token) => token.type == 'list'
     ) as marked.Tokens.List;
     let answers: Array<Answer> = [];
     list.items.forEach(function (item, i) {
-        let answer = parseAnswer(item);
+        let answer = parseAnswer(item, config);
         answers.push(
             new Answer(i, answer['text'], item['checked'], answer['comment'])
         );
@@ -117,10 +117,10 @@ function parseAnswers(tokens: marked.Token[]): Array<Answer> {
     return answers;
 }
 
-function parseAnswer(item: marked.Tokens.ListItem) {
+function parseAnswer(item: marked.Tokens.ListItem), config: Config {
     let comments = item['tokens'].filter((token) => token.type == 'blockquote');
     let texts = item['tokens'].filter((token) => token.type != 'blockquote');
-    return { text: parseTokens(texts), comment: parseTokens(comments) };
+    return { text: parseTokens(texts, config), comment: parseTokens(comments, config) };
 }
 
 function determineQuestionType(tokens: marked.Token[]): QuestionType {
@@ -138,7 +138,13 @@ function determineQuestionType(tokens: marked.Token[]): QuestionType {
     }
 }
 
-function parseTokens(tokens: marked.Token[]): string {
+function parseTokens(tokens: marked.Token[], config?: Config): string {
+    const purifyOptions: DOMPurify.config = {};
+
+    if (config?.allowedAttributes && config.allowedAttributes.length > 0) {
+        purifyOptions.ADD_ATTR = config.allowedAttributes;
+    }
+
     return DOMPurify.sanitize(marked.parser(tokens as marked.TokensList));
 }
 
