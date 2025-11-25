@@ -117,7 +117,7 @@ function parseAnswers(tokens: marked.Token[], config: Config): Array<Answer> {
     return answers;
 }
 
-function parseAnswer(item: marked.Tokens.ListItem), config: Config {
+function parseAnswer(item: marked.Tokens.ListItem, config: Config) {
     let comments = item['tokens'].filter((token) => token.type == 'blockquote');
     let texts = item['tokens'].filter((token) => token.type != 'blockquote');
     return { text: parseTokens(texts, config), comment: parseTokens(comments, config) };
