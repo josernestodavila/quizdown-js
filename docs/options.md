@@ -16,7 +16,8 @@ let config = {
     secondaryColor: '#f2f2f2',  // secondary CSS color
     textColor: 'black',         // text color of some elements
     locale: null,               // language of the user interface (auto-detect per default)
-    enableRetry: true           // allow the user to resubmit answers
+    enableRetry: true,          // allow the user to resubmit answers
+    allowedAttributes: []       // allow custom attributes to be kept after sanitizing the HTML
 };
 
 quizdown.init(config);
@@ -105,3 +106,24 @@ x = [1, 2, 3, 4]
 6. Xbox
 7. Wii
 ```
+
+## Opening Links in New Tabs
+
+By default, HTML attributes like `target` are sanitized for security. To allow links to open in new tabs, add `target` to the allowed attributes:
+
+```javascript
+quizdown.init({
+  allowedAttributes: ['target']
+});
+```
+
+The in you quiz markdown:
+
+### What is cloud computing?
+
+> <a href="https://docs.example.com" target="_blank" rel="noopener noreferrer">Documentation</a>
+
+- [x] Delivery of computing services over the internet
+- [ ] Physical server maintenance
+
+---
