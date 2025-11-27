@@ -145,7 +145,7 @@ function parseTokens(tokens: marked.Token[], config?: Config): string {
         purifyOptions.ADD_ATTR = config.allowedAttributes;
     }
 
-    return DOMPurify.sanitize(marked.parser(tokens as marked.TokensList));
+    return DOMPurify.sanitize(marked.parser(tokens as marked.TokensList), purifyOptions);
 }
 
 function htmlDecode(text: string) {
